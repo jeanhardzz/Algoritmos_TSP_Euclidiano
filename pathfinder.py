@@ -6,6 +6,7 @@ import time
 
 from bnb import Bnb
 from tat import Tat
+from chr import Chr
 
 
 
@@ -95,7 +96,7 @@ class Pathfinder:
         inicio = time.time()
         busca.bnb_my()
         fim = time.time()
-        
+
         solucao_otima = self.EstimativaCustoOtimo()
         print("Estimativa da solucao otima: ",solucao_otima)
         print("Tempo: ",round(fim - inicio,4))
@@ -113,7 +114,15 @@ class Pathfinder:
         print("Tempo: ",round(fim - inicio,4))
         
     def Christofides(self):
-        pass
+        busca = Chr(self.g)
+
+        inicio = time.time()
+        busca.Chr()
+        fim = time.time()
+
+        solucao_otima = self.EstimativaCustoOtimo()
+        print("Estimativa da solucao otima: ",solucao_otima)
+        print("Tempo: ",round(fim - inicio,4))
 
     def EstimativaCustoOtimo(self):
         sol_parcial = []

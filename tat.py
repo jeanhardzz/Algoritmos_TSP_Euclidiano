@@ -12,7 +12,7 @@ class Tat:
         mst = nx.minimum_spanning_tree(self.g, weight='peso', algorithm='prim')
         inicial = list(self.g.nodes())[0]
         nos = nx.get_node_attributes(self.g,'pos')
-        print(nos)
+        #print(nos)
 
         #nx.draw(mst,with_labels=True, font_weight='bold')
         #plt.show()
@@ -20,7 +20,7 @@ class Tat:
         self.BuscaPreOrder(mst,inicial)
         self.visitados.append(inicial)
 
-        print(self.visitados)
+        #print(self.visitados)
 
         solucao = []
         custo = 0
