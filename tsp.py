@@ -14,7 +14,7 @@ def main():
     tsp.Leitura(lst[0],lst[1],lst[2]) 
     tsp.CriarGrafo()   
     tsp.Busca()
-    tsp.ShowGrafo()
+    #tsp.ShowGrafo()
 
 if __name__ == "__main__":
     main()

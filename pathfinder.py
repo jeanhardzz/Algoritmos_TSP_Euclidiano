@@ -2,15 +2,19 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import numpy as np
 import random
+import time
+
 from bnb import Bnb
+from tat import Tat
+
+
 
 
 class Pathfinder:
     alg = None
     instancia = None
     metrica = None
-    g = nx.Graph() #grafo
-    pos = None #auxiliar para desenhar o grafico
+    g = nx.Graph() #grafo    
 
     def __init__(self) -> None:
         pass
@@ -43,11 +47,16 @@ class Pathfinder:
         
         #print("\nArestas:\n",arestas)
 
-        for i in range(len(arestas)):
-            self.g.add_edge(pontos[arestas[i][0]],pontos[arestas[i][1]], peso=arestas[i][2])
+        for i, (x, y) in enumerate(pontos):
+            self.g.add_node(i, pos=(x,y))
 
-        self.pos = {point: point for point in pontos}      
-        print(self.g)
+        for i in range(len(arestas)):
+            self.g.add_edge(arestas[i][0],arestas[i][1], peso=arestas[i][2])
+        
+        #print(self.g)
+                
+        
+    
         
         
 
@@ -66,38 +75,103 @@ class Pathfinder:
         return round(d,4)
     
     def ShowGrafo(self):
-        # you want your own layout
-        # pos = nx.spring_layout(G)
-        
-
-        # add axis
-        fig, ax = plt.subplots()
-        nx.draw(self.g, pos=self.pos, node_color='k', ax=ax)
-        nx.draw(self.g, pos=self.pos, node_size=1500, ax=ax)  # draw nodes and edges
-        nx.draw_networkx_labels(self.g, pos=self.pos)  # draw node labels/names
-        # draw edge weights
-        labels = nx.get_edge_attributes(self.g, 'peso')
-        nx.draw_networkx_edge_labels(self.g, self.pos, edge_labels=labels, ax=ax)
-        plt.axis("on")
-        ax.set_xlim(0, 1001)
-        ax.set_ylim(0,1001)
-        ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+        pos=nx.get_node_attributes(self.g,'pos')               
+        nx.draw(self.g,pos,with_labels=True, font_weight='bold')
+        labels = nx.get_edge_attributes(self.g,'peso')
+        nx.draw_networkx_edge_labels(self.g,pos,edge_labels=labels)
         plt.show()
     
-    def Busca(self):
+    def Busca(self):        
         if self.alg == "bnb":
             self.BranchAndBound()
-        if self.alg == "tat":
+        if self.alg == "tat":            
             self.TwiceAroundTheTree()
         if self.alg == "chr":
             self.Christofides()
 
     def BranchAndBound(self):
         busca = Bnb(self.g)
-        busca.bnb_my()
-    
-    def TwiceAroundTheTree(self):
-        pass
 
+        inicio = time.time()
+        busca.bnb_my()
+        fim = time.time()
+        
+        solucao_otima = self.EstimativaCustoOtimo()
+        print("Estimativa da solucao otima: ",solucao_otima)
+        print("Tempo: ",round(fim - inicio,4))
+        #busca.bnb_tsp()
+    
+    def TwiceAroundTheTree(self):        
+        busca = Tat(self.g)
+
+        inicio = time.time()
+        busca.tat()
+        fim = time.time()
+
+        solucao_otima = self.EstimativaCustoOtimo()
+        print("Estimativa da solucao otima: ",solucao_otima)
+        print("Tempo: ",round(fim - inicio,4))
+        
     def Christofides(self):
         pass
+
+    def EstimativaCustoOtimo(self):
+        sol_parcial = []
+        #print("Solução parcial", sol_parcial)
+        total = 0
+        nos = list(self.g.nodes) 
+        for n in nos:
+            if n not in sol_parcial:
+                #print(n, " nao esta na parcial:")
+                arestas = list(self.g.edges(n,data=True))
+                menores = []
+                for a in arestas:
+                    menores.append(a[2]['peso'])
+                menores.sort()
+                #print(menores[0] ,"-", menores[1])
+                total = total + menores[0] + menores[1]
+            else:
+                index = sol_parcial.index(n)
+                if index == 0 or index == len(sol_parcial)-1:
+                    #print(n, " esta na parcial - BORDA")
+                    arestas = list(self.g.edges(n,data=True))
+                    menores = []
+                    for a in arestas:
+                        menores.append(a[2]['peso'])
+                    menores.sort()
+                    #print(menores)
+                    m1 = menores[0]
+                    m2 = menores[1]
+                    if len(sol_parcial)>1:
+                        if index == 0:
+                            v = self.g[n][sol_parcial[index+1]]
+                            if v['peso'] != m1 and v['peso'] != m2:
+                                if m1<m2:
+                                    m2 = v['peso']
+                                else:
+                                    m1 = v['peso']
+                        if index == len(sol_parcial)-1:
+                            v = self.g[n][sol_parcial[index-1]]
+                            if v['peso'] != m1 and v['peso'] != m2:
+                                if m1<m2:
+                                    m2 = v['peso']
+                                else:
+                                    m1 = v['peso']                        
+                    total = total + m1 + m2
+                    #print(m1,"-",m2)
+                       
+                else:
+                    #print(n, " esta na parcial - DENTRO")
+                    #print(sol_parcial[index+1])
+                    v1 = self.g[n][sol_parcial[index+1]]   
+                    m1 = v1['peso']
+
+                    v2 = self.g[n][sol_parcial[index-1]]   
+                    m2 = v2['peso']
+
+                    total = total + m1 + m2
+                    #print(m1,"-",m2) 
+        
+        total = np.ceil(total / 2)
+        #print(total)
+        return total

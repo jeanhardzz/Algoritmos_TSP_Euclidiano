@@ -90,8 +90,11 @@ class Bnb:
         n = len(nos)
         
         nos_explorados = 0
+        tamanho_borda = 0
+        
 
         sucesso.append(nos[0])
+        
         root = (self.bound(sucesso),1,0,sucesso)
 
         heapq.heappush(borda,root)
@@ -100,8 +103,12 @@ class Bnb:
 
         while len(borda) > 0:
             
+            if len(borda) > tamanho_borda:
+                tamanho_borda = len(borda)
+                
             no = heapq.heappop(borda)
-            print("olhando no: ",no)
+            nos_explorados = nos_explorados + 1
+            #print("olhando no: ",no)
 
             estimativa = no[0]
             level = no[1]
@@ -136,12 +143,12 @@ class Bnb:
                                 aux = (self.bound(sol_aux), no[1]+1, custo+peso, sol_aux)
                                 #print("add: ",aux)
                                 heapq.heappush(borda,aux)
-                                nos_explorados = nos_explorados + 1
+                                
                                 #print("borda: ",borda)                            
                             
-        print(best)
-        print(sucesso)
-        print(nos_explorados)
+        print("Solucao: ",sucesso)           
+        print("\nQuantidade maxima de nos armazenados no heap: ", tamanho_borda)        
+        print("Custo da solucao: ",best)     
                 
 
 
@@ -170,8 +177,9 @@ class Bnb:
         
         #print(fila)
         while len(fila)>0:
-            print("loop")
+            #print("loop")
             no = heapq.heappop(fila)
+            cont = cont + 1
             sol = no[3]
             #print("entrei while")
             #print(no)
@@ -220,11 +228,12 @@ class Bnb:
                             aux = (self.bound(sol3), no[1]+1, no[2] + peso, sol3)
                             #print(aux)
                             heapq.heappush(fila,aux)
-                            cont = cont + 1
+                            
         
-        print(best)
-        print(sucesso)
-        print(cont)
+        
+        print("Solucao: ",sucesso)
+        print("\nCusto da solucao: ",best)
+        print("Quantidade de nós expandidos:",cont)
         """
         print(self.bound(sol))
 
